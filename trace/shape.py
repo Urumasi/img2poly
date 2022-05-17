@@ -10,9 +10,7 @@ class Shape:
         self.height = height
         self.path = path
         self.area = np.full(width * height, False)
-        print(f'[{time()}] bucket fill begin')
         self.fill_shape()
-        print(f'[{time()}] bucket fill end')
 
     def fill_shape(self):
         # Add border to final shape

@@ -75,32 +75,38 @@ def trace_image(image: Image, threshold=128):
     (width, height) = image.size
     image_threshold = image.convert('L').point(lambda val: 255 if val > threshold else 0, mode='1')
     image_threshold.save('threshold.png')
-    data = ~np.array(image_threshold.getdata()).astype(bool)
+    initial_data = ~np.array(image_threshold.getdata()).astype(bool)
 
-    paths = list()
     shapes = list()
 
+    data_layer = initial_data
     while True:
         found_shape = False
+        shapes.append(list())
+        data = data_layer
         while True:
             found = False
-            i = 0
-            while not data[i] and i < len(data):
-                i += 1
-            if i != len(data):
-                path = trace(data, width, i)
-                shapes.append(Shape(path, width, height))
-                #found = True
+            hits = np.where(data == True)[0]
+            if len(hits):
+                print(hits[0])
+                path = trace(data, width, hits[0])
+                shape = Shape(path, width, height)
+                shapes[-1].append(shape)
+                data = data & ~shape.area
+                found = True
             if not found:
                 break
+            found_shape = True
         if not found_shape:
             break
+        for shape in shapes[-1]:
+            data_layer = data_layer ^ shape.area
 
     print(f'[{time()}] trace_image saving images')
     image_paths = image_threshold.convert('RGB')
-    for i, shape in enumerate(shapes):
-        shape.save_as_image(f'shape{i}.png')
-        # print(shape.path)
-        for pixel in shape.path:
-            image_paths.putpixel(pixel, (255, 0, 0))
+    for i, layer in enumerate(shapes):
+        for j, shape in enumerate(layer):
+            shape.save_as_image(f'shape{i}_{j}.png')
+            for pixel in shape.path:
+                image_paths.putpixel(pixel, (255, 0, 0))
     image_paths.save('paths.png')
