@@ -1,6 +1,5 @@
 from PIL import Image
 import numpy as np
-from time import time
 
 from .shape import Shape
 
@@ -13,29 +12,14 @@ def read_data(data, w, x, y):
 
 
 def rotate_right(direction):
-    if direction == (0, 1):
-        return -1, 0
-    elif direction == (-1, 0):
-        return 0, -1
-    elif direction == (0, -1):
-        return 1, 0
-    elif direction == (1, 0):
-        return 0, 1
+    return -direction[1], direction[0]
 
 
 def rotate_left(direction):
-    if direction == (0, 1):
-        return 1, 0
-    elif direction == (1, 0):
-        return 0, -1
-    elif direction == (0, -1):
-        return -1, 0
-    elif direction == (-1, 0):
-        return 0, 1
+    return direction[1], -direction[0]
 
 
 def trace(data, w, idx):
-    print(f'[{time()}] trace begin')
     x = idx % w
     y = idx // w
     point_list = [(x, y)]
@@ -66,15 +50,13 @@ def trace(data, w, idx):
             point_list.append((x, y))
             continue
         break
-    print(f'[{time()}] trace end')
     return point_list
 
 
 def trace_image(image: Image, threshold=128):
-    print(f'[{time()}] trace_image begin')
     (width, height) = image.size
     image_threshold = image.convert('L').point(lambda val: 255 if val > threshold else 0, mode='1')
-    image_threshold.save('threshold.png')
+    # image_threshold.save('threshold.png')
     initial_data = ~np.array(image_threshold.getdata()).astype(bool)
 
     shapes = list()
@@ -88,7 +70,6 @@ def trace_image(image: Image, threshold=128):
             found = False
             hits = np.where(data == True)[0]
             if len(hits):
-                print(hits[0])
                 path = trace(data, width, hits[0])
                 shape = Shape(path, width, height)
                 shapes[-1].append(shape)
@@ -102,7 +83,7 @@ def trace_image(image: Image, threshold=128):
         for shape in shapes[-1]:
             data_layer = data_layer ^ shape.area
 
-    print(f'[{time()}] trace_image saving images')
+
     image_paths = image_threshold.convert('RGB')
     for i, layer in enumerate(shapes):
         for j, shape in enumerate(layer):
@@ -110,3 +91,7 @@ def trace_image(image: Image, threshold=128):
             for pixel in shape.path:
                 image_paths.putpixel(pixel, (255, 0, 0))
     image_paths.save('paths.png')
+
+
+    return shapes[:-1]
+

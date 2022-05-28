@@ -1,6 +1,5 @@
 from PIL import Image
 import numpy as np
-from time import time
 
 
 class Shape:
@@ -11,6 +10,8 @@ class Shape:
         self.path = path
         self.area = np.full(width * height, False)
         self.fill_shape()
+        self.cached_area = 0
+        self.cache_valid = False
 
     def fill_shape(self):
         # Add border to final shape
@@ -29,7 +30,7 @@ class Shape:
             inside = (p0[0] + dy, p0[1] - dx)
             queue.add(inside)
 
-        # BFS fill in shape
+        # BFS fill in shape (slow!)
         while len(queue):
             pos = queue.pop()
             if self.area[pos[0] + pos[1] * self.width]:
@@ -44,7 +45,27 @@ class Shape:
             if pos[1] < (self.height - 1) and not self.area[pos[0] + (pos[1] + 1) * self.width]:
                 queue.add((pos[0], pos[1] + 1))
 
-    def save_as_image(self, path):
+    def save_area_as_image(self, filepath):
         data = self.area.astype(int).reshape((self.height, self.width)) * 255
         img = Image.fromarray(np.uint8(data))
-        img.save(path)
+        img.save(filepath)
+
+    def calculate_path_area(self):
+        if self.cache_valid:
+            return self.cached_area
+
+        self.cached_area = 0
+        self.cache_valid = True
+        return self.cached_area
+
+    def simplify_path(self, smooth_diagonals=True):
+        pass
+
+    def path_verts(self):
+        return len(self.path)
+
+    def decimate_path(self, max_verts):
+        pass
+
+    def save_path_as_image(self, filepath):
+        pass

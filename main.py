@@ -5,8 +5,8 @@ from trace import trace_image
 
 
 def main():
-    img = Image.open('vlc_gy2XrHkjqi.png')
-    trace_image(img)
+    img = Image.open('test.png')
+    print(trace_image(img))
     return 0
 
 
